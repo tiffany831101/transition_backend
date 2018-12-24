@@ -1,6 +1,7 @@
 var mysql = require("mysql");
+var util = require('util')
 
-var conn = mysql.createConnection({
+var conn = mysql.createPool({
     host: "localhost",
     user: "root",
     password: "",
@@ -9,7 +10,7 @@ var conn = mysql.createConnection({
     multipleStatements: true
 });
 // 測試是否連線成功
-conn.connect(function (err) {
+conn.getConnection(function (err) {
     if (err) {
         console.log('連線失敗');
         console.log(err)
@@ -17,6 +18,8 @@ conn.connect(function (err) {
     }
     console.log('連線成功');
 });
+
+conn.query = util.promisify(conn.query)
 
 module.exports = {
     conn: conn,
