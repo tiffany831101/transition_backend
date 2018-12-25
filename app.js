@@ -81,8 +81,9 @@ cron.schedule("00 00 18 * * *", function () {
             throw new Error(err)
         }
     }
+    reset();
 })
-// reset();
+
 // 每天中午12點清空全部selected和全部agree
 
 
@@ -207,7 +208,7 @@ app.post('/course', function (req, res) {
                 for (let j = 0; j < keywordArr.length; j++) {
                     resultArr.push(keywordArr[j]);
                     if (j == keywordArr.length - 1 && i == req.body.keyword.length - 1) {
-                        res.end(resultArr);
+                        res.send(resultArr);
                     }
                 }
             }
@@ -322,7 +323,16 @@ app.post("/firstpage", function (req, res) {
     }, (error, results) => {
         res.send(results);
         if (error) throw error;
+    });
+})
 
+//知道有幾頁
+app.post("/pagination", function (req, res) {
+    conn.query({
+        sql: `SELECT COUNT(title) FROM ${cmmtsTable} WHERE category = "${req.body.category}" AND parent_id = 0`,
+    }, (error, results) => {
+        res.send(results);
+        if (error) throw error;
     });
 })
 
@@ -373,11 +383,32 @@ app.post("/get_child_cmmt", function (req, res) {
 })
 
 
+app.post("/otherpage", function (req, res) {
+    let category = req.body.category;
+    let page = req.body.page;
+    let num = (page - 1) * 5;
+    console.log("數字在這裡", num);
+    conn.query({
+        sql: 'SELECT title , nickname , id , parent_id , time , comment FROM ?? WHERE parent_id=0 AND category=? ORDER BY time DESC LIMIT ?, 5',
+        values: [cmmtsTable, req.body.category, num],
+    }, (error, results) => {
+        res.send(results);
+        if (error) throw error;
+    });
+})
+
+// pagination
+app.post("/pagination", function (req, res) {
+    let category = req.body.category;
+    console.log(category);
+})
+
+
 
 
 
 // 開啟端口3001
-app.listen(3001, () => console.log('伺服器開啟3001端口'));
+
 
 
 
@@ -417,7 +448,7 @@ app.post("/addfriend", function (req, res) {
         let idToday = await conn.query(`SELECT selected FROM users WHERE nickname = "${req.body.nickname}"`);
         let friendToday = await conn.query(`SELECT nickname FROM users WHERE id = ${idToday[0].selected}`)
         let alreadyAgree = await conn.query(`SELECT agree FROM users WHERE nickname = "${req.body.nickname}"`)
-        console.log(alreadyAgree[0].agree);
+        // console.log(alreadyAgree[0].agree);
         if (idToday[0].selected == 0) {
             res.send(friendToday); //傳回去是一個空陣列
         } else {
@@ -511,3 +542,6 @@ app.post("/agreeadd", function (req, res) {
     }
     agreefriend();
 })
+
+
+app.listen(3001, () => console.log('伺服器開啟3001端口'));
