@@ -326,11 +326,24 @@ app.post("/firstpage", function (req, res) {
     });
 })
 
+app.post("/child", function (req, res) {
+    console.log(req.body.parent_id);
+
+    conn.query({
+        sql: 'SELECT nickname , id , time , comment FROM ?? WHERE parent_id=?',
+        values: [cmmtsTable, req.body.parent_id]
+    }, (error, results) => {
+        res.send(results);
+        if (error) throw error;
+    });
+})
+
 //知道有幾頁
 app.post("/pagination", function (req, res) {
     conn.query({
         sql: `SELECT COUNT(title) FROM ${cmmtsTable} WHERE category = "${req.body.category}" AND parent_id = 0`,
     }, (error, results) => {
+        console.log(results);
         res.send(results);
         if (error) throw error;
     });
@@ -541,6 +554,12 @@ app.post("/agreeadd", function (req, res) {
         // res.send(friendToday) //如果不是0就代表有朋友抽
     }
     agreefriend();
+})
+
+
+app.post("/incomeanswer", function (req, res) {
+    console.log(req.body.result);
+
 })
 
 
